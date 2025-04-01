@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meal Plan Parser with Calories</title>
+    <title>Meal Plan Parser with Weights</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,45 +12,50 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         textarea {
             width: 100%;
             height: 150px;
             margin: 10px 0;
         }
+
         button {
             padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
-            margin-right: 10px;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
         .section {
             margin: 20px 0;
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
         h2 {
             color: #333;
         }
+
         .calories {
             color: #666;
             font-style: italic;
         }
     </style>
 </head>
+
 <body>
-    <h1>Meal Plan Parser with Calories</h1>
-    
+    <h1>Meal Plan Parser with Weights</h1>
+
     <div class="section">
         <h2>Input Meal Plan (JSON)</h2>
         <textarea id="jsonInput" placeholder="Paste your meal plan JSON here..."></textarea>
         <button onclick="parseMealPlan()">Parse Meal Plan</button>
-        <button onclick="clearMealPlan()">Clear Saved Plan</button>
     </div>
 
     <div class="section" id="mealPlanDisplay" style="display: none;">
@@ -68,26 +74,77 @@
     </div>
 
     <script>
-        // Simple calorie database (calories per typical serving)
+        // Calorie database (calories per 100 grams)
         const calorieDatabase = {
-            'eggs': 78,        // 1 large egg
-            'toast': 75,       // 1 slice
-            'butter': 102,     // 1 tbsp
-            'chicken': 165,    // 100g
-            'rice': 130,       // 1 cup cooked
-            'vegetables': 35,  // 1 cup
-            'pasta': 131,      // 1 cup cooked
-            'tomato sauce': 112, // 1 cup
-            'parmesan': 22,    // 1 tbsp
-            'oatmeal': 68,     // 1/2 cup dry
-            'milk': 103,       // 1 cup
-            'berries': 60,     // 1 cup
-            'salmon': 206,     // 100g
-            'quinoa': 120,     // 1 cup cooked
-            'broccoli': 55,    // 1 cup
-            'beef': 213,       // 100g
-            'potatoes': 130,   // 1 medium
-            'carrots': 25      // 1 medium
+            "whole wheat bread": 250,
+            "avocado": 160,
+            "tomato": 18,
+            "mixed fruit": 60,
+            "almonds": 579,
+            "salmon": 200,
+            "quinoa": 120,
+            "mixed vegetables": 50,
+            "olive oil": 884,
+            "chicken breast": 165,
+            "brown rice": 110,
+            "broccoli": 34,
+            "tomato sauce": 50,
+            "olives": 115,
+            "hummus": 166,
+            "carrots": 41,
+            "orange": 47,
+            "oatmeal": 68,
+            "chia seeds": 486,
+            "berries": 57,
+            "banana": 89,
+            "tuna": 132,
+            "mixed greens": 20,
+            "cucumber": 16,
+            "turkey": 189,
+            "whole wheat pasta": 124,
+            "zucchini": 17,
+            "apple": 52,
+            "peanut butter": 588,
+            "walnuts": 654,
+            "spinach": 23,
+            "flaxseeds": 534,
+            "almond milk": 15,
+            "chickpeas": 164,
+            "red onion": 40,
+            "lemon": 29,
+            "cod": 82,
+            "potatoes": 77,
+            "green beans": 31,
+            "grapes": 69,
+            "pistachios": 562,
+            "whole grain cereal": 350,
+            "strawberries": 32,
+            "pumpkin seeds": 559,
+            "whole wheat tortilla": 300,
+            "black beans": 132,
+            "corn": 86,
+            "salsa": 36,
+            "shrimp": 99,
+            "couscous": 112,
+            "asparagus": 20,
+            "kiwi": 61,
+            "sunflower seeds": 584,
+            "coconut yogurt": 100,
+            "honey": 304,
+            "falafel": 333,
+            "tahini": 595,
+            "tabbouleh": 100,
+            "lentils": 116,
+            "pear": 57,
+            "cashews": 553,
+            "eggs": 155,
+            "chia seed pudding": 200,
+            "peaches": 39,
+            "hemp seeds": 553,
+            "sweet potato": 86,
+            "kale": 49,
+            "pineapple": 50,
+            "macadamia nuts": 718
         };
 
         function parseMealPlan() {
@@ -96,10 +153,7 @@
                 const data = JSON.parse(jsonInput);
                 const mealPlan = data.mealPlan;
 
-                // Save the JSON input to localStorage
-                localStorage.setItem('mealPlan', jsonInput);
-
-                // Display Meal Plan with Calories
+                // Meal Plan Display with Calories
                 let mealPlanHtml = '';
                 let totalCalories = 0;
                 let dailyCalories = {};
@@ -107,49 +161,57 @@
                 for (const day in mealPlan) {
                     mealPlanHtml += `<h3>${day}</h3>`;
                     let dayCalories = 0;
-                    
+
                     for (const meal in mealPlan[day]) {
                         let mealCalories = 0;
+                        let mealIngredients = [];
                         mealPlan[day][meal].forEach(item => {
-                            mealCalories += calorieDatabase[item] || 0;
+                            const name = item.name;
+                            const weight = item.weight;
+                            const caloriesPer100g = calorieDatabase[name] || 0;
+                            const calories = (caloriesPer100g / 100) * weight;
+                            mealCalories += calories;
+                            mealIngredients.push(`${name} (${weight}g)`);
                         });
                         dayCalories += mealCalories;
                         totalCalories += mealCalories;
-                        mealPlanHtml += `<p><strong>${meal}:</strong> ${mealPlan[day][meal].join(', ')} 
-                            <span class="calories">(${mealCalories} cal)</span></p>`;
+                        mealPlanHtml += `<p><strong>${meal}:</strong> ${mealIngredients.join(', ')} 
+                            <span class="calories">(${Math.round(mealCalories)} cal)</span></p>`;
                     }
-                    mealPlanHtml += `<p><strong>Daily Total:</strong> <span class="calories">${dayCalories} cal</span></p>`;
+                    mealPlanHtml += `<p><strong>Daily Total:</strong> <span class="calories">${Math.round(dayCalories)} cal</span></p>`;
                     dailyCalories[day] = dayCalories;
                 }
                 document.getElementById('mealPlanOutput').innerHTML = mealPlanHtml;
                 document.getElementById('mealPlanDisplay').style.display = 'block';
 
-                // Generate Shopping List
+                // Shopping List with Total Weights
                 const shoppingList = {};
                 for (const day in mealPlan) {
                     for (const meal in mealPlan[day]) {
                         mealPlan[day][meal].forEach(item => {
-                            shoppingList[item] = (shoppingList[item] || 0) + 1;
+                            const name = item.name;
+                            const weight = item.weight;
+                            shoppingList[name] = (shoppingList[name] || 0) + weight;
                         });
                     }
                 }
 
                 let shoppingListHtml = '<ul>';
                 for (const item in shoppingList) {
-                    const itemCalories = calorieDatabase[item] || 0;
-                    shoppingListHtml += `<li>${item} (${shoppingList[item]}) - ${itemCalories} cal per serving</li>`;
+                    const totalWeight = shoppingList[item];
+                    const caloriesPer100g = calorieDatabase[item] || 0;
+                    shoppingListHtml += `<li>${item} (total: ${totalWeight}g) - ${caloriesPer100g} cal per 100g</li>`;
                 }
                 shoppingListHtml += '</ul>';
                 document.getElementById('shoppingListOutput').innerHTML = shoppingListHtml;
                 document.getElementById('shoppingListDisplay').style.display = 'block';
 
                 // Calorie Summary
-                let calorieHtml = '<p><strong>Total Calories for Plan:</strong> ' + totalCalories + ' cal</p>';
-                calorieHtml += '<p><strong>Average Daily Calories:</strong> ' + 
-                    Math.round(totalCalories / Object.keys(mealPlan).length) + ' cal</p>';
+                let calorieHtml = `<p><strong>Total Calories:</strong> ${Math.round(totalCalories)} cal</p>`;
+                calorieHtml += `<p><strong>Average Daily Calories:</strong> ${Math.round(totalCalories / Object.keys(mealPlan).length)} cal</p>`;
                 calorieHtml += '<h3>Calories by Day:</h3><ul>';
                 for (const day in dailyCalories) {
-                    calorieHtml += `<li>${day}: ${dailyCalories[day]} cal</li>`;
+                    calorieHtml += `<li>${day}: ${Math.round(dailyCalories[day])} cal</li>`;
                 }
                 calorieHtml += '</ul>';
                 document.getElementById('calorieOutput').innerHTML = calorieHtml;
@@ -159,24 +221,7 @@
                 alert('Error parsing JSON: ' + error.message);
             }
         }
-
-        function clearMealPlan() {
-            // Remove the meal plan from localStorage and reset the UI
-            localStorage.removeItem('mealPlan');
-            document.getElementById('jsonInput').value = '';
-            document.getElementById('mealPlanDisplay').style.display = 'none';
-            document.getElementById('shoppingListDisplay').style.display = 'none';
-            document.getElementById('calorieSummary').style.display = 'none';
-        }
-
-        // Load the saved meal plan from localStorage when the page loads
-        window.onload = function() {
-            const savedMealPlan = localStorage.getItem('mealPlan');
-            if (savedMealPlan) {
-                document.getElementById('jsonInput').value = savedMealPlan;
-                parseMealPlan(); // Automatically parse and display the saved plan
-            }
-        };
     </script>
 </body>
+
 </html>
