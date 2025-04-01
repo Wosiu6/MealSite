@@ -1,61 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meal Plan Parser with Weights</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 150px;
-            margin: 10px 0;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .section {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        h2 {
-            color: #333;
-        }
-
-        .calories {
-            color: #666;
-            font-style: italic;
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        textarea { width: 100%; height: 150px; margin: 10px 0; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; margin-right: 10px; }
+        button:hover { background-color: #45a049; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        h2 { color: #333; }
+        .calories { color: #666; font-style: italic; }
     </style>
 </head>
-
 <body>
     <h1>Meal Plan Parser with Weights</h1>
-
+    
     <div class="section">
         <h2>Input Meal Plan (JSON)</h2>
         <textarea id="jsonInput" placeholder="Paste your meal plan JSON here..."></textarea>
         <button onclick="parseMealPlan()">Parse Meal Plan</button>
+        <button onclick="clearMealPlan()">Clear Saved Plan</button>
     </div>
 
     <div class="section" id="mealPlanDisplay" style="display: none;">
@@ -74,86 +40,212 @@
     </div>
 
     <script>
-        // Calorie database (calories per 100 grams)
         const calorieDatabase = {
-            "whole wheat bread": 250,
-            "avocado": 160,
-            "tomato": 18,
-            "mixed fruit": 60,
-            "almonds": 579,
-            "salmon": 200,
-            "quinoa": 120,
-            "mixed vegetables": 50,
-            "olive oil": 884,
-            "chicken breast": 165,
-            "brown rice": 110,
-            "broccoli": 34,
-            "tomato sauce": 50,
-            "olives": 115,
-            "hummus": 166,
-            "carrots": 41,
-            "orange": 47,
-            "oatmeal": 68,
-            "chia seeds": 486,
-            "berries": 57,
-            "banana": 89,
-            "tuna": 132,
-            "mixed greens": 20,
-            "cucumber": 16,
-            "turkey": 189,
-            "whole wheat pasta": 124,
-            "zucchini": 17,
-            "apple": 52,
-            "peanut butter": 588,
-            "walnuts": 654,
-            "spinach": 23,
-            "flaxseeds": 534,
-            "almond milk": 15,
-            "chickpeas": 164,
-            "red onion": 40,
-            "lemon": 29,
-            "cod": 82,
-            "potatoes": 77,
-            "green beans": 31,
-            "grapes": 69,
-            "pistachios": 562,
-            "whole grain cereal": 350,
-            "strawberries": 32,
-            "pumpkin seeds": 559,
-            "whole wheat tortilla": 300,
-            "black beans": 132,
-            "corn": 86,
-            "salsa": 36,
-            "shrimp": 99,
-            "couscous": 112,
-            "asparagus": 20,
-            "kiwi": 61,
-            "sunflower seeds": 584,
-            "coconut yogurt": 100,
-            "honey": 304,
-            "falafel": 333,
-            "tahini": 595,
-            "tabbouleh": 100,
-            "lentils": 116,
-            "pear": 57,
-            "cashews": 553,
-            "eggs": 155,
-            "chia seed pudding": 200,
-            "peaches": 39,
-            "hemp seeds": 553,
-            "sweet potato": 86,
-            "kale": 49,
-            "pineapple": 50,
-            "macadamia nuts": 718
+            "whole wheat bread": 250, "avocado": 160, "tomato": 18, "mixed fruit": 60, "almonds": 579,
+            "salmon": 200, "quinoa": 120, "mixed vegetables": 50, "olive oil": 884, "chicken breast": 165,
+            "brown rice": 110, "broccoli": 34, "tomato sauce": 50, "olives": 115, "hummus": 166,
+            "carrots": 41, "orange": 47, "oatmeal": 68, "chia seeds": 486, "berries": 57, "banana": 89,
+            "tuna": 132, "mixed greens": 20, "cucumber": 16, "turkey": 189, "whole wheat pasta": 124,
+            "zucchini": 17, "apple": 52, "peanut butter": 588, "walnuts": 654, "spinach": 23,
+            "flaxseeds": 534, "almond milk": 15, "chickpeas": 164, "red onion": 40, "lemon": 29,
+            "cod": 82, "potatoes": 77, "green beans": 31, "grapes": 69, "pistachios": 562,
+            "whole grain cereal": 350, "strawberries": 32, "pumpkin seeds": 559, "whole wheat tortilla": 300,
+            "black beans": 132, "corn": 86, "salsa": 36, "shrimp": 99, "couscous": 112, "asparagus": 20,
+            "kiwi": 61, "sunflower seeds": 584, "coconut yogurt": 100, "honey": 304, "falafel": 333,
+            "tahini": 595, "tabbouleh": 100, "lentils": 116, "pear": 57, "cashews": 553, "eggs": 155,
+            "chia seed pudding": 200, "peaches": 39, "hemp seeds": 553, "sweet potato": 86, "kale": 49,
+            "pineapple": 50, "macadamia nuts": 718, "marinara sauce": 50
+        };
+
+        const defaultMealPlan = {
+            "mealPlan": {
+                "Monday": {
+                    "breakfast": [
+                        {"name": "whole wheat bread", "weight": 60},
+                        {"name": "avocado", "weight": 70},
+                        {"name": "tomato", "weight": 123},
+                        {"name": "mixed fruit", "weight": 150},
+                        {"name": "almonds", "weight": 28}
+                    ],
+                    "lunch": [
+                        {"name": "salmon", "weight": 150},
+                        {"name": "quinoa", "weight": 185},
+                        {"name": "mixed vegetables", "weight": 150},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "dinner": [
+                        {"name": "chicken breast", "weight": 150},
+                        {"name": "brown rice", "weight": 195},
+                        {"name": "broccoli", "weight": 150},
+                        {"name": "tomato sauce", "weight": 120},
+                        {"name": "olives", "weight": 30}
+                    ],
+                    "snacks": [
+                        {"name": "hummus", "weight": 60},
+                        {"name": "carrots", "weight": 122},
+                        {"name": "orange", "weight": 131}
+                    ]
+                },
+                "Tuesday": {
+                    "breakfast": [
+                        {"name": "oatmeal", "weight": 234},
+                        {"name": "chia seeds", "weight": 20},
+                        {"name": "berries", "weight": 150},
+                        {"name": "banana", "weight": 118}
+                    ],
+                    "lunch": [
+                        {"name": "tuna", "weight": 150},
+                        {"name": "mixed greens", "weight": 60},
+                        {"name": "tomato", "weight": 60},
+                        {"name": "cucumber", "weight": 50},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "dinner": [
+                        {"name": "turkey", "weight": 150},
+                        {"name": "whole wheat pasta", "weight": 124},
+                        {"name": "marinara sauce", "weight": 120},
+                        {"name": "zucchini", "weight": 150}
+                    ],
+                    "snacks": [
+                        {"name": "apple", "weight": 182},
+                        {"name": "peanut butter", "weight": 32},
+                        {"name": "walnuts", "weight": 28}
+                    ]
+                },
+                "Wednesday": {
+                    "breakfast": [
+                        {"name": "spinach", "weight": 60},
+                        {"name": "banana", "weight": 118},
+                        {"name": "berries", "weight": 150},
+                        {"name": "flaxseeds", "weight": 20},
+                        {"name": "almond milk", "weight": 240}
+                    ],
+                    "lunch": [
+                        {"name": "chickpeas", "weight": 164},
+                        {"name": "tomato", "weight": 60},
+                        {"name": "cucumber", "weight": 50},
+                        {"name": "red onion", "weight": 40},
+                        {"name": "olive oil", "weight": 13},
+                        {"name": "lemon", "weight": 10}
+                    ],
+                    "dinner": [
+                        {"name": "cod", "weight": 150},
+                        {"name": "potatoes", "weight": 150},
+                        {"name": "green beans", "weight": 150},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "snacks": [
+                        {"name": "grapes", "weight": 151},
+                        {"name": "pistachios", "weight": 28}
+                    ]
+                },
+                "Thursday": {
+                    "breakfast": [
+                        {"name": "whole grain cereal", "weight": 30},
+                        {"name": "almond milk", "weight": 240},
+                        {"name": "strawberries", "weight": 150},
+                        {"name": "pumpkin seeds", "weight": 18}
+                    ],
+                    "lunch": [
+                        {"name": "chicken breast", "weight": 150},
+                        {"name": "whole wheat tortilla", "weight": 50},
+                        {"name": "hummus", "weight": 60},
+                        {"name": "mixed vegetables", "weight": 150}
+                    ],
+                    "dinner": [
+                        {"name": "lentils", "weight": 198},
+                        {"name": "mixed vegetables", "weight": 150},
+                        {"name": "whole grain bread", "weight": 30},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "snacks": [
+                        {"name": "pear", "weight": 178},
+                        {"name": "cashews", "weight": 28}
+                    ]
+                },
+                "Friday": {
+                    "breakfast": [
+                        {"name": "eggs", "weight": 100},
+                        {"name": "spinach", "weight": 30},
+                        {"name": "tomato", "weight": 123},
+                        {"name": "whole wheat bread", "weight": 30}
+                    ],
+                    "lunch": [
+                        {"name": "quinoa", "weight": 185},
+                        {"name": "black beans", "weight": 86},
+                        {"name": "corn", "weight": 77},
+                        {"name": "avocado", "weight": 70},
+                        {"name": "salsa", "weight": 60}
+                    ],
+                    "dinner": [
+                        {"name": "shrimp", "weight": 150},
+                        {"name": "couscous", "weight": 173},
+                        {"name": "asparagus", "weight": 150},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "snacks": [
+                        {"name": "kiwi", "weight": 138},
+                        {"name": "sunflower seeds", "weight": 28}
+                    ]
+                },
+                "Saturday": {
+                    "breakfast": [
+                        {"name": "coconut yogurt", "weight": 240},
+                        {"name": "honey", "weight": 21},
+                        {"name": "walnuts", "weight": 28},
+                        {"name": "berries", "weight": 150}
+                    ],
+                    "lunch": [
+                        {"name": "falafel", "weight": 100},
+                        {"name": "tahini", "weight": 30},
+                        {"name": "tabbouleh", "weight": 150}
+                    ],
+                    "dinner": [
+                        {"name": "chickpeas", "weight": 164},
+                        {"name": "mixed vegetables", "weight": 150},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "snacks": [
+                        {"name": "mango", "weight": 165},
+                        {"name": "brazil nuts", "weight": 28}
+                    ]
+                },
+                "Sunday": {
+                    "breakfast": [
+                        {"name": "chia seed pudding", "weight": 120},
+                        {"name": "almond milk", "weight": 240},
+                        {"name": "peaches", "weight": 150},
+                        {"name": "hemp seeds", "weight": 20}
+                    ],
+                    "lunch": [
+                        {"name": "hummus", "weight": 60},
+                        {"name": "olives", "weight": 30},
+                        {"name": "cucumber", "weight": 150},
+                        {"name": "tomato", "weight": 150},
+                        {"name": "quinoa", "weight": 185}
+                    ],
+                    "dinner": [
+                        {"name": "chicken breast", "weight": 150},
+                        {"name": "sweet potato", "weight": 130},
+                        {"name": "kale", "weight": 67},
+                        {"name": "olive oil", "weight": 13}
+                    ],
+                    "snacks": [
+                        {"name": "pineapple", "weight": 165},
+                        {"name": "macadamia nuts", "weight": 28}
+                    ]
+                }
+            }
         };
 
         function parseMealPlan() {
             try {
-                const jsonInput = document.getElementById('jsonInput').value;
+                const jsonInput = document.getElementById('jsonInput').value || JSON.stringify(defaultMealPlan);
                 const data = JSON.parse(jsonInput);
                 const mealPlan = data.mealPlan;
 
-                // Meal Plan Display with Calories
+                localStorage.setItem('mealPlan', jsonInput);
+
                 let mealPlanHtml = '';
                 let totalCalories = 0;
                 let dailyCalories = {};
@@ -184,7 +276,6 @@
                 document.getElementById('mealPlanOutput').innerHTML = mealPlanHtml;
                 document.getElementById('mealPlanDisplay').style.display = 'block';
 
-                // Shopping List with Total Weights
                 const shoppingList = {};
                 for (const day in mealPlan) {
                     for (const meal in mealPlan[day]) {
@@ -206,7 +297,6 @@
                 document.getElementById('shoppingListOutput').innerHTML = shoppingListHtml;
                 document.getElementById('shoppingListDisplay').style.display = 'block';
 
-                // Calorie Summary
                 let calorieHtml = `<p><strong>Total Calories:</strong> ${Math.round(totalCalories)} cal</p>`;
                 calorieHtml += `<p><strong>Average Daily Calories:</strong> ${Math.round(totalCalories / Object.keys(mealPlan).length)} cal</p>`;
                 calorieHtml += '<h3>Calories by Day:</h3><ul>';
@@ -218,10 +308,38 @@
                 document.getElementById('calorieSummary').style.display = 'block';
 
             } catch (error) {
-                alert('Error parsing JSON: ' + error.message);
+                alert('Error parsing JSON or saving to localStorage: ' + error.message);
             }
         }
+
+        function clearMealPlan() {
+            localStorage.removeItem('mealPlan');
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('mealPlanDisplay').style.display = 'none';
+            document.getElementById('shoppingListDisplay').style.display = 'none';
+            document.getElementById('calorieSummary').style.display = 'none';
+        }
+
+        window.onload = function() {
+            if (!window.localStorage) {
+                alert('LocalStorage is not supported in this browser.');
+                return;
+            }
+            try {
+                const savedMealPlan = localStorage.getItem('mealPlan');
+                if (savedMealPlan) {
+                    document.getElementById('jsonInput').value = savedMealPlan;
+                    parseMealPlan();
+                } else {
+                    document.getElementById('jsonInput').value = JSON.stringify(defaultMealPlan);
+                    parseMealPlan();
+                }
+            } catch (error) {
+                alert('Error loading from localStorage: ' + error.message);
+                document.getElementById('jsonInput').value = JSON.stringify(defaultMealPlan);
+                parseMealPlan();
+            }
+        };
     </script>
 </body>
-
 </html>
